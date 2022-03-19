@@ -1,29 +1,29 @@
-# Placer le fichier 'TKInterUtility.py' dans le même dossier
+### IMPORTER LE MODULE:
+# Placer le fichier 'TKInterUtility.py' dans le même dossier que votre programme,
 # puis importer le module avec:
 import TKInterUtility as util
 # Ou avec: import TKInterUtility
 # Ou avec: from TKInterUtility import ...
 
 
+### EXEMPLES D'UTILISATION:
+# Donner un nom pour toutes le fenêtres
+util.window_title = "Mon programme"
+
 
 # Afficher quelque chose
 util.display("Bonjour!")
 
-
-
-def annulation():
-    print("Annulé!")
-
 # Afficher quelque chose, toutes les options
-util.display("Bonjour!", # Message à afficher
+res = util.display("Bonjour!", # Message à afficher
     canCancel=True, # [False par défaut] Si le bouton 'annuler' est disponible
-    onCancel=annulation, # [Optionnel] Fonction à appeler si annulé
     continueText="Message pour continuer", # [Optionnel] Massage sur le bouton pour valider
     cancelText="Message pour annuler") # [Optionnel] Massage sur le bouton pour annuler
 
-# Note: La fonction arrête le programe jusqu'a la validation
-#       Si il y a annulation, les lignes après cette fonction ne seront jamais éxecutées (seulement onCancel sera appelée)
-
+if res:
+    util.display("L'utilisateur a continué")
+else:
+    util.display("L'utilisateur a annulé")
 
 
 # Demande du texte (doit etre non vide)
@@ -46,3 +46,14 @@ print(res)
 res = util.text_input("Message :", acceptempty=True)
 # Ou alors: res = InputWindow.text_input(acceptempty=True)
 print(res)
+
+
+# Afficher plusieurs options
+res = util.options("Choisissez une option:", ["Option 1:", "Option 2:", "Quitter:"])
+
+if res == 0:
+    util.display("L'utilisateur a choisi l'option 1")
+elif res == 1:
+    util.display("L'utilisateur a choisi l'option 2")
+elif res == 2:
+    util.display("Au revoir!")
