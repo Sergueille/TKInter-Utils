@@ -17,13 +17,14 @@ class InputWindow:
 
         self.root = Tk()
         self.root.title(window_title)
+        self.root.after(1, lambda: self.root.focus_force())
         frm = ttk.Frame(self.root, padding=5)
         frm.grid()
         
         ttk.Label(frm, text=message).grid(column=0, row=0, padx=5)
 
         if error_message != "":
-            ttk.Label(frm, text=error_message, justify="left", foreground="#FF0000").grid(column=0, row=1, pady=5, columnspan=3)
+            ttk.Label(frm, text=error_message, foreground="#FF0000").grid(column=0, row=1, pady=5, columnspan=3)
 
         self.entry = ttk.Entry(frm)
         self.entry.grid(column=1, row=0, padx=5)
