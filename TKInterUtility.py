@@ -8,11 +8,11 @@ window_title = "python"
 # FONCTIONS INTERNES
 
 class InputWindow:
-    def _on_submit(self, _):
+    def _on_submit(self):
         self.result = self.entry.get()
         self.root.destroy()
 
-    def __init__(self, message):
+    def __init__(self, message, error_message=""):
         self.result = None
 
         self.root = Tk()
@@ -22,35 +22,44 @@ class InputWindow:
         
         ttk.Label(frm, text=message).grid(column=0, row=0, padx=5)
 
+        if error_message != "":
+            ttk.Label(frm, text=error_message, justify="left", foreground="#FF0000").grid(column=0, row=1, pady=5, columnspan=3)
+
         self.entry = ttk.Entry(frm)
         self.entry.grid(column=1, row=0, padx=5)
         self.entry.focus()
         
         ttk.Button(frm, text="Envoyer", command=self._on_submit).grid(column=2, row=0, padx=5)
-        self.root.bind('<Return>', self._on_submit)# add function on en
+        self.root.bind('<Return>', lambda _: self._on_submit())# add function on enter
         self.root.mainloop()
 
-async def _text_input_async(message, type, acceptempty=False):
-    window = InputWindow(message)
+async def _text_input_async(message, type, acceptempty=False, predicate=None, error_message=""):
+    window = InputWindow(message, error_message)
 
     while window.result == None:
         pass
 
     if type == "str":
         if acceptempty or len(window.result.strip()) > 0:
-            return window.result
+            parsedRes = window.result
         else:
-            return await _text_input_async("Veullez entrer une valeur non vide :", type)
+            return await _text_input_async(message, type, acceptempty, predicate, error_message="Veuillez entrer une valeur non vide.")
     
     try:
         if type == "int":
-            return int(window.result)
+            parsedRes = int(window.result)
         elif type == "float":
-            return float(window.result)
-        else:
-            raise Exception()
+            parsedRes = float(window.result)
+        elif type != 'str':
+            raise Exception("Unknown type")
     except ValueError:
-        return await _text_input_async("Valeur incorrecte, réessayez :", type)
+        return await _text_input_async(message, type, acceptempty, predicate, error_message="Valeur incorrecte, réessayez.")
+
+    if predicate != None and not predicate(parsedRes):
+        return await _text_input_async(message, type, acceptempty, predicate, error_message="Valeur incorrecte, réessayez.")
+
+    return parsedRes
+
 
 class InfoWindow:
     def __init__(self, message, canCancel, continueText, cancelText):
@@ -118,7 +127,7 @@ async def _options_async(message, list):
 
 # FONCTIONS EXTERNES
 
-def text_input(message = "Entrez du texte :", acceptempty=False):
+def text_input(message = "Entrez du texte :", acceptempty=False, predicate=None):
     """
     Demande tu texte a l'utilisateur avec une fenêtre
 
@@ -129,13 +138,15 @@ def text_input(message = "Entrez du texte :", acceptempty=False):
         acceptempty (bool, optional): 
             Est-ce que l'utilisateur peut ne rien entrer
             Par défaut: False
+        predicate (callable, optional):
+            Fonction qui renvoie un bool qui détermine si la valeur est correcte
 
     Retourne:
         str: La valeur entrée par l'utilisateur
     """
-    return asyncio.run(_text_input_async(message, "str", acceptempty))
+    return asyncio.run(_text_input_async(message, "str", acceptempty, predicate))
 
-def float_input(message = "Entrez un nombre à virgule :"):
+def float_input(message = "Entrez un nombre à virgule :", predicate=None):
     """
     Demande un float a l'utilisateur avec une fenêtre
 
@@ -143,13 +154,15 @@ def float_input(message = "Entrez un nombre à virgule :"):
         message (str, optional): 
             Message affiché sur la fenêtre
             Par défaut: "Entrez un nombre à virgule :"
+        predicate (callable, optional):
+            Fonction qui renvoie un bool qui détermine si la valeur est correcte
 
     Retourne:
         float: La valeur entrée par l'utilisateur
     """
-    return asyncio.run(_text_input_async(message, "float"))
+    return asyncio.run(_text_input_async(message, "float", predicate=predicate))
 
-def int_input(message = "Entrez un entier :"):
+def int_input(message = "Entrez un entier :", predicate=None):
     """
     Demande un int a l'utilisateur avec une fenêtre
 
@@ -157,11 +170,13 @@ def int_input(message = "Entrez un entier :"):
         message (str, optional): 
             Message affiché sur la fenêtre
             Par défaut: "Entrez un entier :"
+        predicate (callable, optional):
+            Fonction qui renvoie un bool qui détermine si la valeur est correcte
 
     Retourne:
         int: La valeur entrée par l'utilisateur
     """
-    return asyncio.run(_text_input_async(message, "int"))
+    return asyncio.run(_text_input_async(message, "int", predicate=predicate))
 
 def display(message, canCancel=False, continueText="Ok!", cancelText="Annuler"):
     """

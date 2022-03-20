@@ -44,7 +44,16 @@ print(res)
 
 # Demande du texte, et accepte une valeur vide
 res = util.text_input("Message :", acceptempty=True)
-# Ou alors: res = InputWindow.text_input(acceptempty=True)
+print(res)
+
+# Demande du texte avec une condition spéciale
+res = util.text_input("Entrez un mot de 5 lettres :", 
+    predicate=lambda mot: len(mot)==5)
+print(res)
+
+# Demande un int avec une condition spéciale
+res = util.int_input("Entrez un entier positif :", 
+    predicate=lambda nombre: nombre > 0)
 print(res)
 
 
