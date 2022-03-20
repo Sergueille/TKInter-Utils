@@ -183,7 +183,7 @@ def display(message, canCancel=False, continueText="Ok!", cancelText="Annuler"):
     Retourne:
         bool: Si l'utilisateur a validé ou annulé
     """
-    asyncio.run(_display_async(message, canCancel, continueText, cancelText))
+    return asyncio.run(_display_async(message, canCancel, continueText, cancelText))
 
 def options(message, list):
     """
