@@ -1,11 +1,11 @@
 from tkinter import *
 from tkinter import ttk
-import asyncio
 
 # VARIABLES GLOBALES
 window_title = "python"
 
-# FONCTIONS INTERNES
+
+# FONCTIONS
 
 class InputWindow:
     def _on_submit(self):
@@ -34,7 +34,7 @@ class InputWindow:
         self.root.bind('<Return>', lambda _: self._on_submit())# add function on enter
         self.root.mainloop()
 
-async def _text_input_async(message, type, acceptempty=False, predicate=None, error_message=""):
+def _text_input_internal(message, type, acceptempty=False, predicate=None, error_message=""):
     window = InputWindow(message, error_message)
 
     while window.result == None:
@@ -44,7 +44,7 @@ async def _text_input_async(message, type, acceptempty=False, predicate=None, er
         if acceptempty or len(window.result.strip()) > 0:
             parsedRes = window.result
         else:
-            return await _text_input_async(message, type, acceptempty, predicate, error_message="Veuillez entrer une valeur non vide.")
+            return _text_input_internal(message, type, acceptempty, predicate, error_message="Veuillez entrer une valeur non vide.")
     
     try:
         if type == "int":
@@ -54,10 +54,10 @@ async def _text_input_async(message, type, acceptempty=False, predicate=None, er
         elif type != 'str':
             raise Exception("Unknown type")
     except ValueError:
-        return await _text_input_async(message, type, acceptempty, predicate, error_message="Valeur incorrecte, réessayez.")
+        return _text_input_internal(message, type, acceptempty, predicate, error_message="Valeur incorrecte, réessayez.")
 
     if predicate != None and not predicate(parsedRes):
-        return await _text_input_async(message, type, acceptempty, predicate, error_message="Valeur incorrecte, réessayez.")
+        return _text_input_internal(message, type, acceptempty, predicate, error_message="Valeur incorrecte, réessayez.")
 
     return parsedRes
 
@@ -89,7 +89,26 @@ class InfoWindow:
         self.root.mainloop()
 
 
-async def _display_async(message, canCancel, continueText, cancelText):
+def display(message, canCancel=False, continueText="Ok!", cancelText="Annuler"):
+    """
+    Affiche quelque chose dans une fenêtre
+
+    Args:
+        message (str): 
+            Message affiché sur la fenêtre
+        canCancel (bool, optional): 
+            Est-ce que le bouton annuler est disponible
+            Par défaut: False
+        continueText (str, optional): 
+            Texte affiché sur le bouton pour valider
+            Par défaut: "Ok!"
+        cancelText (str, optional): 
+            Texte affiché sur le bouton pour annuler
+            Par défaut: "Annuler"
+
+    Retourne:
+        bool: Si l'utilisateur a validé ou annulé
+    """
     window = InfoWindow(message, canCancel, continueText, cancelText)
 
     while window.result == None:
@@ -118,7 +137,21 @@ class OptionWindow:
 
         self.root.mainloop()
 
-async def _options_async(message, list):
+
+def options(message, list):
+    """
+    Affiche plusieurs options sous forme de boutons à l'utilisateur
+
+    Args:
+        message (str): 
+            Message affiché en haut de la fenêtre
+        list (list): 
+            liste des noms des options
+
+    Retourne:
+        int: L'id de l'option sélectionnée
+    """
+
     window = OptionWindow(message, list)
 
     while window.selected == None:
@@ -126,7 +159,7 @@ async def _options_async(message, list):
 
     return window.selected
 
-# FONCTIONS EXTERNES
+# VARIANTES INPUT
 
 def text_input(message = "Entrez du texte :", acceptempty=False, predicate=None):
     """
@@ -145,7 +178,7 @@ def text_input(message = "Entrez du texte :", acceptempty=False, predicate=None)
     Retourne:
         str: La valeur entrée par l'utilisateur
     """
-    return asyncio.run(_text_input_async(message, "str", acceptempty, predicate))
+    return _text_input_internal(message, "str", acceptempty, predicate)
 
 def float_input(message = "Entrez un nombre à virgule :", predicate=None):
     """
@@ -161,7 +194,7 @@ def float_input(message = "Entrez un nombre à virgule :", predicate=None):
     Retourne:
         float: La valeur entrée par l'utilisateur
     """
-    return asyncio.run(_text_input_async(message, "float", predicate=predicate))
+    return _text_input_internal(message, "float", predicate=predicate)
 
 def int_input(message = "Entrez un entier :", predicate=None):
     """
@@ -177,42 +210,4 @@ def int_input(message = "Entrez un entier :", predicate=None):
     Retourne:
         int: La valeur entrée par l'utilisateur
     """
-    return asyncio.run(_text_input_async(message, "int", predicate=predicate))
-
-def display(message, canCancel=False, continueText="Ok!", cancelText="Annuler"):
-    """
-    Affiche quelque chose dans une fenêtre
-
-    Args:
-        message (str): 
-            Message affiché sur la fenêtre
-        canCancel (bool, optional): 
-            Est-ce que le bouton annuler est disponible
-            Par défaut: False
-        continueText (str, optional): 
-            Texte affiché sur le bouton pour valider
-            Par défaut: "Ok!"
-        cancelText (str, optional): 
-            Texte affiché sur le bouton pour annuler
-            Par défaut: "Annuler"
-
-    Retourne:
-        bool: Si l'utilisateur a validé ou annulé
-    """
-    return asyncio.run(_display_async(message, canCancel, continueText, cancelText))
-
-def options(message, list):
-    """
-    Affiche plusieurs options sous forme de boutons à l'utilisateur
-
-    Args:
-        message (str): 
-            Message affiché en haut de la fenêtre
-        list (list): 
-            liste des noms des options
-
-    Retourne:
-        int: L'id de l'option sélectionnée
-    """
-
-    return asyncio.run(_options_async(message, list))
+    return _text_input_internal(message, "int", predicate=predicate)
